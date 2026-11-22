@@ -144,12 +144,51 @@ def cmd_get(args) -> int:
 
 def cmd_link(args) -> int:
     client, _ = build_client(args)
-    tgt = client.link_one(args.fid)
-    print(tgt.url)
-    print(f"\n# name={tgt.name} size={tgt.size} md5={tgt.md5} range_size={tgt.range_size}",
+    entry = next((e for e in client.walk() if not e.is_dir and e.fid == args.fid), None)
+    if entry is None:
+        entry = type("E", (), {"fid": args.fid, "name": args.fid, "path": args.fid, "size": 0})()
+    from .resolve import resolve_entry, render
+    r = resolve_entry(client, entry)
+    if args.format == "json":
+        import json as _json
+        print(_json.dumps(r.to_dict(), ensure_ascii=False, indent=1))
+    else:
+        print(render([r], args.format, args.out, args.pipe_base, args.share))
+    print(f"\n# 直链有效期约 {r.expires_in // 60} 分钟；单独 URL 会 403，必须带 Cookie: __pugs",
           file=sys.stderr)
-    print(f"# 下载需携带 Cookie: __pugs=…（取自同一次会话）", file=sys.stderr)
     return 0
+
+
+def cmd_resolve(args) -> int:
+    from .resolve import resolve_entry, render
+    client, _ = build_client(args)
+    files = [e for e in client.walk() if not e.is_dir]
+    sel = _select(files, args)
+    if not sel:
+        return 1
+    out, bad = [], 0
+    for e in sel:
+        try:
+            out.append(resolve_entry(client, e))
+            print(f"  resolved {e.path}", file=sys.stderr, flush=True)
+        except ApiError as err:
+            bad += 1
+            print(f"  [fail] {e.path}: {err}", file=sys.stderr, flush=True)
+    text = render(out, args.format, args.out, args.pipe_base, args.share)
+    if args.write:
+        with open(args.write, "w", encoding="utf-8") as f:
+            f.write(text)
+        print(f"已写出 {args.write}（{len(out)} 条，失败 {bad}）", file=sys.stderr)
+    else:
+        print(text)
+    return 0 if bad == 0 else 2
+
+
+def cmd_serve(args) -> int:
+    from .server import serve
+    serve(args.host, args.port)
+    return 0
+
 
 
 def cmd_arc(args) -> int:
@@ -223,10 +262,30 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--dry-run", action="store_true")
     sp.set_defaults(func=cmd_get)
 
-    sp = sub.add_parser("link", help="取单个文件的签名直链")
+    sp = sub.add_parser("link", help="解析单个文件的直链 + 必需请求头")
     add_share(sp)
     sp.add_argument("--fid", required=True)
+    sp.add_argument("--format", default="txt",
+                    choices=["txt", "json", "curl", "wget", "ps", "aria2", "idm", "list"])
+    sp.add_argument("--out", default="", help="aria2/idm 格式时的落盘目录")
     sp.set_defaults(func=cmd_link)
+
+    sp = sub.add_parser("resolve", help="批量解析成外部下载器可用的产物")
+    add_share(sp)
+    sp.add_argument("--all", action="store_true")
+    sp.add_argument("--fid", default="")
+    sp.add_argument("--match", default="", help="文件名通配，如 *.rar")
+    sp.add_argument("--format", default="json",
+                    choices=["json", "txt", "curl", "wget", "ps", "aria2", "idm", "list"])
+    sp.add_argument("--out", default="", help="aria2/idm 格式时的落盘目录")
+    sp.add_argument("--pipe-base", default="", help="用 /pipe 代理 URL，如 http://127.0.0.1:8080")
+    sp.add_argument("--write", default="", help="写入文件而不是打印")
+    sp.set_defaults(func=cmd_resolve)
+
+    sp = sub.add_parser("serve", help="启动 HTTP 解析服务")
+    sp.add_argument("--host", default="127.0.0.1")
+    sp.add_argument("--port", type=int, default=8080)
+    sp.set_defaults(func=cmd_serve)
 
     sp = sub.add_parser("arc", help="读压缩包内部条目")
     add_share(sp)

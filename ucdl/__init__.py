@@ -7,11 +7,12 @@
 from .api import DownloadTarget, ShareClient  # noqa: F401
 from .config import __version__  # noqa: F401
 from .download import Downloader, md5_expected, safe_name  # noqa: F401
+from .resolve import Resolved, render, resolve_entry  # noqa: F401
 from .session import ApiError, GuestSession  # noqa: F401
 from .share import Entry, ShareRef, parse_pwd_id  # noqa: F401
 
 __all__ = [
     "ShareClient", "DownloadTarget", "GuestSession", "ApiError",
     "ShareRef", "Entry", "parse_pwd_id", "Downloader", "md5_expected",
-    "safe_name", "__version__",
+    "safe_name", "Resolved", "resolve_entry", "render", "__version__",
 ]
