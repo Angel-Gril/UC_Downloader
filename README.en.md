@@ -81,7 +81,7 @@ ucdl/
 ├── session.py   guest session, __pugs retrieval, transport retries
 ├── share.py     SSR stoken parsing, entry model
 ├── api.py       list_dir / walk / links / archive_tree / preview
-├── resolve.py   Resolved model + 6 renderers (json/txt/curl/wget/ps1/aria2)
+├── resolve.py   Resolved model + 8 renderers (incl. aria2/idm/list)
 ├── download.py  chunked parallel download, link refresh, md5 normalization
 ├── verify.py    size / MD5 / zip CRC / rar magic
 ├── server.py    HTTP resolver: /list /parse /resolve /pipe
@@ -98,7 +98,7 @@ Against a 32-file / 423,929,789 B public share, anonymous:
 | Per-file MD5 vs server field | 32 / 32 |
 | zip CRC · rar magic | pass |
 | Cross-check vs an independent implementation | 32 / 32 byte-identical |
-| Unit tests | 22 (18 offline, 4 integration skipped) |
+| Unit tests | 27 (23 offline, 4 integration skipped) |
 
 The exported artifact was replayed in a **fresh interpreter with no session state**:
 `200`, 2,559,057 B, MD5 matched.
