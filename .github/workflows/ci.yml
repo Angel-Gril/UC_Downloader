@@ -6,14 +6,27 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  # 双保险：即使代码层没兜住，Windows 英文 runner 也不要因中文输出崩
+  PYTHONIOENCODING: utf-8
+  PYTHONUTF8: "1"
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.11", "3.12"]
+        include:
+          # 3.9 在 ubuntu-24.04 上 setup-python 拿不到预编译包，固定在 22.04
+          - os: ubuntu-22.04
+            python-version: "3.9"
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.12"
     steps:
       - uses: actions/checkout@v4
 
@@ -36,3 +49,6 @@ jobs:
         run: |
           python -m ucdl --version
           python -m ucdl --help
+
+      - name: Resolver smoke (no network)
+        run: python -c "from ucdl.resolve import Resolved, render; r=Resolved(fid='f',path='a/b.rar',name='b.rar',size=1,md5='',url='https://x/y?Expires=1',headers={'Cookie':'__pugs=1'}); print(render([r],'aria2')); print(render([r],'idm',share='https://drive.uc.cn/s/x?public=1'))"

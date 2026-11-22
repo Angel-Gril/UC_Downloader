@@ -302,7 +302,21 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _ensure_utf8_streams() -> None:
+    """Windows 默认控制台代码页（cp1252/cp936）对中文输出会抛 UnicodeEncodeError。
+
+    `python -m ucdl --help` 在英文 Windows 上会直接崩，因此入口处统一切到 UTF-8。
+    """
+    for name in ("stdout", "stderr"):
+        stream = getattr(sys, name, None)
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
 def main(argv: List[str] | None = None) -> int:
+    _ensure_utf8_streams()
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
