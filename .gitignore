@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# 运行产物
+out*/
+downloads/
+*.part
+tree.json
+*.egg-info/
