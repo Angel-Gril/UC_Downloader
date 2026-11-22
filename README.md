@@ -3,6 +3,7 @@
 > 把 `drive.uc.cn/s/<pwd_id>` 公开分享解析成**外部下载器可直接使用**的下载描述，
 > 顺带提供一份把鉴权链讲透的协议分析。全程不登录。
 
+[![CI](https://github.com/Angel-Gril/UC_Downloader/actions/workflows/ci.yml/badge.svg)](https://github.com/Angel-Gril/UC_Downloader/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](#)
 [![Tests](https://img.shields.io/badge/tests-27%20passed-brightgreen.svg)](#测试)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)

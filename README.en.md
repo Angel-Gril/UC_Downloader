@@ -3,6 +3,8 @@
 > Parse a `drive.uc.cn/s/<pwd_id>` public share into a **download descriptor any external
 > client can consume**, plus a deep write-up of the auth chain. No account required.
 
+[![CI](https://github.com/Angel-Gril/UC_Downloader/actions/workflows/ci.yml/badge.svg)](https://github.com/Angel-Gril/UC_Downloader/actions/workflows/ci.yml)
+
 [中文文档](README.md) · [Protocol analysis](docs/01-protocol-analysis.md) · [Resolver design](docs/05-resolver.md)
 
 ---
